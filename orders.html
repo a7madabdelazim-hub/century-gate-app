@@ -82,6 +82,11 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+/* [N3] In an iPhone Home Screen app that draws under the status bar, a page locked to
+   height:100% is measured as "screen minus status bar", so a bar fixed to bottom:0 floats
+   above the real edge. Making the page as tall as the real screen fixes it ("Fix A",
+   confirmed on the owner's iPhone with bartest.html). Outside that mode the inset is 0. */
+html { min-height: calc(100% + env(safe-area-inset-top)); }
 body {
   background: var(--bg);
   color: var(--text);
@@ -4260,7 +4265,7 @@ function saveForm() {
 // Each app writes and reads only its own section and ignores the other.
 // ============================================================
 const BACKUP_MAX_BYTES = 8 * 1024 * 1024;   // refuse absurdly large files
-const APP_VERSION = '13 Nov 2026 · one app (2)';        // [E5] shown in Settings so you can tell which version an icon runs
+const APP_VERSION = '13 Nov 2026 · one app (3)';        // [E5] shown in Settings so you can tell which version an icon runs
 const ALL_STORAGE_KEYS = () => [STORAGE_KEY, CUSTOMERS_STORAGE_KEY, GROUPS_STORAGE_KEY, BATCHES_STORAGE_KEY, SETTINGS_STORAGE_KEY];
 
 function isIOSDevice() {
