@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CG Test">
+<meta name="theme-color" content="#0A2540">
+<title>CG merge test - Quotes</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,system-ui,"Segoe UI",sans-serif;background:#f6f3ec;color:#14213a;font-size:16px;line-height:1.5;
+  padding:calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+.wrap{max-width:520px;margin:0 auto;display:grid;gap:14px}
+.bar{background:#0A2540;color:#fff;border-radius:14px;padding:14px 16px}
+.bar b{color:#E3C77A}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tabs a,.tabs span{display:block;text-align:center;padding:12px;border-radius:12px;font-weight:700;text-decoration:none;font-size:16px}
+.tabs span{background:#0A2540;color:#fff}
+.tabs a{background:#fff;color:#0A2540;border:1px solid #d9d2c2}
+.card{background:#fff;border:1px solid #e2dccf;border-radius:14px;padding:14px 16px;display:grid;gap:10px}
+h2{margin:0;font-size:17px}
+input{font-size:16px;padding:10px 12px;border:1px solid #cfc8b8;border-radius:10px;width:100%}
+button{font-size:16px;font-weight:700;padding:11px 14px;border-radius:10px;border:0;background:#b8892a;color:#fff;width:100%}
+button.ghost{background:#fff;color:#0A2540;border:1px solid #d9d2c2}
+.row{display:flex;justify-content:space-between;gap:10px;font-size:15px;border-bottom:1px solid #eee7d8;padding:6px 0}
+.row:last-child{border-bottom:0}
+.ok{color:#2f7d32;font-weight:700}.bad{color:#b3261e;font-weight:700}.muted{color:#5c6476;font-size:14px}
+#verdict{border-radius:12px;padding:12px 14px;font-weight:700}
+.v-ok{background:#e3f2e4;color:#2f7d32}.v-bad{background:#fbe5e3;color:#b3261e}.v-wait{background:#f5ead2;color:#8a6418}
+ol{margin:0;padding-left:20px;font-size:15px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">Century Gate merge test · page <b>Quotes</b></div>
+  <div class="tabs"><span>Quotes</span><a href="orders.html">Orders</a></div>
+
+  <div class="card">
+    <h2>Result</h2>
+    <div id="verdict" class="v-wait">Follow the 4 steps below.</div>
+    <div id="rows"></div>
+  </div>
+
+  <div class="card">
+    <h2>Steps</h2>
+    <ol>
+      <li>Open this page from the <b>Home Screen icon</b>, not from Safari.</li>
+      <li>Type any word below and press <b>Save word</b>.</li>
+      <li>Tap the other tab at the top (<b>Orders</b>). Look at the screen: did a Safari bar with an address or a "Done" button appear?</li>
+      <li>Tap back to this tab, then close the app fully and open it again.</li>
+    </ol>
+    <input id="word" placeholder="Type any word" autocomplete="off">
+    <button id="save">Save word</button>
+    <button id="go" class="ghost">Switch page by button (second method)</button>
+    <button id="reset" class="ghost">Reset the test</button>
+    <p class="muted">Then send me a screenshot of this Result box, and tell me if a Safari bar appeared in step 3.</p>
+  </div>
+</div>
+<script>
+(function(){
+  var PAGE = "Quotes", OTHER_URL = "orders.html", KEY = "cg-merge-test";
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {word:"", trail:[]}; }catch(e){ return {word:"", trail:[], broken:true}; } }
+  function save(d){ try{ localStorage.setItem(KEY, JSON.stringify(d)); return true; }catch(e){ return false; } }
+  var standalone = navigator.standalone === true || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+  var d = load();
+  d.trail = (d.trail || []).concat([{p: PAGE, s: standalone, t: Date.now()}]).slice(-12);
+  var canSave = save(d);
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function draw(){
+    var d = load(), t = d.trail || [];
+    var pages = {}; t.forEach(function(x){ pages[x.p] = 1; });
+    var both = pages.Quotes && pages.Orders;
+    var allIn = t.every(function(x){ return x.s; });
+    var rows = [
+      ["Opened as", standalone ? '<span class="ok">Home Screen app</span>' : '<span class="bad">Safari / browser tab</span>'],
+      ["Storage works", canSave ? '<span class="ok">Yes</span>' : '<span class="bad">No</span>'],
+      ["Saved word seen on this page", d.word ? '<span class="ok">'+esc(d.word)+'</span>' : '<span class="muted">nothing saved yet</span>'],
+      ["Both pages visited", both ? '<span class="ok">Yes</span>' : '<span class="muted">not yet</span>'],
+      ["Stayed in the app on every page", t.length ? (allIn ? '<span class="ok">Yes</span>' : '<span class="bad">No</span>') : "-"],
+      ["Page visits", esc(t.map(function(x){ return x.p.charAt(0)+(x.s?"":"!"); }).join(" > "))]
+    ];
+    document.getElementById("rows").innerHTML = rows.map(function(r){ return '<div class="row"><span>'+r[0]+'</span><span>'+r[1]+'</span></div>'; }).join("");
+    var v = document.getElementById("verdict");
+    if(!standalone){ v.className = "v-bad"; v.textContent = "This page is open in Safari. Add it to the Home Screen and open it from the icon."; }
+    else if(!d.word || !both){ v.className = "v-wait"; v.textContent = "In progress. Save a word and visit both pages."; }
+    else if(allIn && canSave){ v.className = "v-ok"; v.textContent = "PASS: both pages stay in the app and share the same data."; }
+    else { v.className = "v-bad"; v.textContent = "FAIL: the pages do not stay together. Send me a screenshot."; }
+  }
+  document.getElementById("save").addEventListener("click", function(){
+    var w = document.getElementById("word").value.trim();
+    if(!w){ document.getElementById("word").focus(); return; }
+    var d = load(); d.word = w + " (saved on " + PAGE + ")"; save(d); document.getElementById("word").value = ""; draw();
+  });
+  document.getElementById("go").addEventListener("click", function(){ window.location.href = OTHER_URL; });
+  document.getElementById("reset").addEventListener("click", function(){ try{ localStorage.removeItem(KEY); }catch(e){} window.location.reload(); });
+  draw();
+})();
+</script>
+</body>
+</html>
